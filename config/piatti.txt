@@ -1,0 +1,5 @@
+PRIMI|Pasta al pomodoro|Pasta alla carbonara|Lasagne|Risotto ai funghi|Pasta al pesto|Gnocchi al ragù|Spaghetti alle vongole
+SECONDI|Cotoletta con patate|Pollo arrosto|Scaloppine al limone|Hamburger con patatine|Pesce al forno
+CONTORNI|Insalata mista|Patate fritte|Verdure grigliate|Spinaci al burro|Carote al vapore
+DOLCI|Tiramisù|Panna cotta|Gelato|Torta al cioccolato|Crostata
+CAFFE|Caffè|Cappuccino|Caffè macchiato|Tè
