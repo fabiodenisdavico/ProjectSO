@@ -1,7 +1,8 @@
 CC = gcc
 CFLAGS = -Wall -g -I./include
 
-SRC = src/main.c src/operatore.c src/utente.c src/ipc_utils.c
+SRC = src/main.c src/operatore.c src/utente.c src/ipc_utils.c src/piatti.c 
+#aggiunto piatti.c da Fabio il 26 12
 TARGET = mensa
 
 all:
