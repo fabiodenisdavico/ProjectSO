@@ -1,6 +1,8 @@
 #ifndef STRUTTURE_H
 #define STRUTTURE_H
 
+#include "config.h"
+
 // ============================================================
 // STATISTICHE IN MEMORIA CONDIVISA
 // ============================================================
@@ -27,5 +29,10 @@ union semun {
     struct semid_ds *buf;       // Buffer per IPC_STAT, IPC_SET
     unsigned short *array;      // Array per GETALL, SETALL
 };
+
+typedef struct { //Piatti Fabio
+    char piatti[NUM_CATEGORIE][MAX_PIATTI_PER_CATEGORIA][64];
+    int num_piatti[NUM_CATEGORIE];  // Conta per ogni categoria
+} ListaPiatti;
 
 #endif // STRUTTURE_H

@@ -11,8 +11,8 @@
 // ============================================================
 // PARAMETRI SIMULAZIONE
 // ============================================================
-#define NUM_OPERATORI 2     // Numero operatori
-#define NUM_UTENTI 20        // Numero utenti per test
+#define NUM_OPERATORI 4     // Numero operatori
+#define NUM_UTENTI 4        // Numero utenti per test
 
 // ============================================================
 // TIPI MESSAGGIO
@@ -24,21 +24,23 @@
 // TEMPI SIMULAZIONE (secondi)
 // ============================================================
 #define TEMPO_PREPARAZIONE 15        // Tempo preparazione piatto
-#define TEMPO_CONSUMAZIONE 2        // Tempo consumazione pasto
+#define TEMPO_CONSUMO 2        // Tempo consumazione pasto
 #define TEMPO_ARRIVO 1              // Intervallo arrivi utenti
 
-// ============================================================
-// STRINGHE
-// ============================================================
-#define MAX_PIATTO_LEN 50
+
+#define MSG_TYPE_ORDINE 1
+#define MSG_TYPE_RISPOSTA 2
+
+
+#define MAX_PIATTI_PER_CATEGORIA 20
+#define FILE_PIATTI "config/piatti.txt"
 
 typedef enum {
     CAT_PRIMI = 0,
     CAT_SECONDI = 1,
-    CAT_DOLCI = 2,
-    CAT_CAFFE = 3,
-    CAT_CONTORNI = 4,  // ← NUOVO
-    NUM_CATEGORIE = 5   // ← AGGIORNA
+    CAT_CONTORNI = 2,    // ← AGGIUNTO
+    CAT_DOLCI = 3,       // ← Indice cambiato
+    CAT_CAFFE = 4,       // ← Indice cambiato
+    NUM_CATEGORIE = 5    // ← Aggiornato
 } Categoria;
-
-#endif // CONFIG_H
+#endif

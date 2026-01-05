@@ -17,23 +17,21 @@ void ctrl_c_handler(int sig) {
     stop = 1;
 }
 
-
 int main() {
-
     signal(SIGINT, ctrl_c_handler);
 
     printf("\n========================================\n");
     printf("  SIMULAZIONE MENSA - TEST IPC\n");
     printf("========================================\n\n");
-    
+
     int shm_id, sem_id, msg_id;
     Stats *stats;
-    
+
     // --------------------------------------------------------
     // 1. CREAZIONE RISORSE IPC
     // --------------------------------------------------------
     printf("[RESPONSABILE] Creazione risorse IPC...\n");
-    
+
     // Shared Memory
     shm_id = shm_create(SHM_KEY, sizeof(Stats));
     if (shm_id < 0) {
@@ -41,7 +39,7 @@ int main() {
         exit(1);
     }
     printf("[RESPONSABILE] Shared memory creata: ID=%d\n", shm_id);
-    
+
     // Semaforo (mutex)
     sem_id = sem_create(SEM_KEY, 1);
     if (sem_id < 0) {
@@ -50,7 +48,7 @@ int main() {
     }
     sem_init(sem_id, 1);  // Inizializza a 1 (mutex libero)
     printf("[RESPONSABILE] Semaforo creato: ID=%d\n", sem_id);
-    
+
     // Coda messaggi
     msg_id = msg_create(MSG_KEY);
     if (msg_id < 0) {
@@ -59,7 +57,7 @@ int main() {
         exit(1);
     }
     printf("[RESPONSABILE] Coda messaggi creata: ID=%d\n\n", msg_id);
-    
+
     // --------------------------------------------------------
     // 2. INIZIALIZZAZIONE STATISTICHE
     // --------------------------------------------------------
@@ -70,22 +68,20 @@ int main() {
         shm_destroy(shm_id);
         exit(1);
     }
-    
+
     memset(stats, 0, sizeof(Stats));
     stats->simulazione_attiva = 1;
-    
+
     // --------------------------------------------------------
     // 3. CREAZIONE OPERATORI
     // --------------------------------------------------------
     printf("[RESPONSABILE] Avvio %d operatori...\n", NUM_OPERATORI);
     pid_t pid_operatori[NUM_OPERATORI];
-    
-    for (int i = 0; i < NUM_OPERATORI; i++) {
 
+    for (int i = 0; i < NUM_OPERATORI; i++) {
         if (stop) break; //Gestione Stop Fabio
 
         pid_t pid = fork();
-        
         if (pid < 0) {
             perror("fork operatore");
             exit(1);
@@ -100,18 +96,17 @@ int main() {
             pid_operatori[i] = pid;
         }
     }
-    
+
     sleep(1);  // Aspetta che operatori siano pronti
-    
+
     // --------------------------------------------------------
     // 4. CREAZIONE UTENTI
     // --------------------------------------------------------
     printf("[RESPONSABILE] Generazione %d utenti...\n\n", NUM_UTENTI);
     pid_t pid_utenti[NUM_UTENTI];
-    
+
     for (int i = 0; i < NUM_UTENTI; i++) {
         pid_t pid = fork();
-        
         if (pid < 0) {
             perror("fork utente");
             exit(1);
@@ -125,10 +120,9 @@ int main() {
             // PROCESSO PADRE
             pid_utenti[i] = pid;
         }
-        
         sleep(1);  // Arrivi scaglionati
     }
-    
+
     // --------------------------------------------------------
     // 5. ATTESA TERMINAZIONE UTENTI
     // --------------------------------------------------------
@@ -137,17 +131,18 @@ int main() {
         waitpid(pid_utenti[i], NULL, 0);
     }
     printf("[RESPONSABILE] Tutti gli utenti sono usciti\n\n");
-    
+
     // --------------------------------------------------------
     // 6. TERMINAZIONE OPERATORI
     // --------------------------------------------------------
     printf("[RESPONSABILE] Terminazione operatori...\n");
-    
-    // Segnala terminazione nelle statistiche
-    sem_wait(sem_id);
+
+    // Segnala terminazione nelle statistiche (SENZA semaforo)
     stats->simulazione_attiva = 0;
-    sem_signal(sem_id);
-    
+
+    // ⏳ Attende che eventuali preparazioni in corso finiscano
+    sleep(2);
+
     // Invia messaggi di terminazione agli operatori
     for (int i = 0; i < NUM_OPERATORI; i++) {
         Messaggio term;
@@ -156,12 +151,14 @@ int main() {
         strcpy(term.piatto, "TERMINA");
         msgsnd(msg_id, &term, sizeof(term) - sizeof(long), 0);
     }
-    
+
     // Attende terminazione operatori
+    printf("[RESPONSABILE] Attesa terminazione operatori...\n");
     for (int i = 0; i < NUM_OPERATORI; i++) {
         waitpid(pid_operatori[i], NULL, 0);
     }
-    
+    printf("[RESPONSABILE] Tutti gli operatori terminati\n");
+
     // --------------------------------------------------------
     // 7. STATISTICHE FINALI
     // --------------------------------------------------------
@@ -171,27 +168,27 @@ int main() {
     printf("Utenti serviti:       %d\n", stats->utenti_serviti);
     printf("Piatti distribuiti:   %d\n", stats->piatti_distribuiti);
     printf("========================================\n\n");
-    
+
     // --------------------------------------------------------
     // 8. CLEANUP RISORSE IPC
     // --------------------------------------------------------
     printf("[RESPONSABILE] Pulizia risorse IPC...\n");
-    
+
     shm_detach(stats);
-    
+
     if (shm_destroy(shm_id) == 0) {
         printf("[RESPONSABILE] Shared memory rimossa\n");
     }
-    
+
     if (sem_destroy(sem_id) == 0) {
         printf("[RESPONSABILE] Semaforo rimosso\n");
     }
-    
+
     if (msg_destroy(msg_id) == 0) {
         printf("[RESPONSABILE] Coda messaggi rimossa\n");
     }
-    
+
     printf("\n[RESPONSABILE] Simulazione completata!\n\n");
-    
+
     return 0;
 }
